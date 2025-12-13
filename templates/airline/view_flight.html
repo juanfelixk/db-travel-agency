@@ -1,0 +1,62 @@
+{% extends "airline/base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Flights</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Flight</th>
+                <th>Aircraft</th>
+                <th>Route</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Direct</th>
+                <th style="width: 80px;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if flights %}
+                {% for f in flights %}
+                    <tr>
+                        <td>{{ f.flight_number }}</td>
+
+                        <td>{{ f.aircraft_model }}</td>
+
+                        <td>
+                            {{ f.departure_airport_id }} - {{ f.departure_airport_name }}
+                            →
+                            {{ f.arrival_airport_id }} - {{ f.arrival_airport_name }}
+                        </td>
+
+                        <td>{{ f.departure_time.strftime("%Y-%m-%d %H:%M") }}</td>
+                        <td>{{ f.arrival_time.strftime("%Y-%m-%d %H:%M") }}</td>
+
+                        <td>{{ "Yes" if f.direct else "No" }}</td>
+
+                        <td class="text-center">
+                            <form action="{{ url_for('delete_flight', flight_id=f.flight_id) }}"
+                                  method="POST"
+                                  onsubmit="return confirm('Delete this flight?');">
+                                <button class="btn btn-sm btn-danger">&times;</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No flights found.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-between mt-4 mb-4">
+        <a href="{{ url_for('airline_dashboard') }}" class="btn btn-secondary">Back</a>
+    </div>
+
+</div>
+
+{% endblock %}

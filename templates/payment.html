@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: calc(100vh - 95px);">
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <!-- NORMAL STATE -->
+                    <div id="payment-content">
+                        <div class="alert alert-warning text-center mb-3">
+                            Complete payment within <strong><span id="countdown">15</span></strong> seconds
+                        </div>
+
+                        <h4 class="card-title">Payment</h4>
+
+                        <p class="text-muted">
+                            Please review the total amount below before completing your payment.
+                            Booking details have been confirmed on the previous page.
+                        </p>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+                            <span class="fw-semibold">Total Amount</span>
+                            <span class="fs-5 fw-bold">Rp {{ "{:,.0f}".format(grand_total).replace(",", ".") }}</span>
+                        </div>
+
+                        <form method="POST" id="payment-form">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Pay Now
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- LOADING STATE -->
+                    <div id="loading-content" class="d-none text-center">
+                        <div class="spinner-border text-primary mb-3 mt-4" role="status"></div>
+                        <h5>Redirecting to payment gateway</h5>
+                        <p class="text-muted mt-2">
+                            Please wait while we process your payment…
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="text-center text-muted mt-3" style="font-size: 0.9rem;">
+                By proceeding, you agree that this payment is final and non-refundable
+                unless stated otherwise in the booking terms.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("payment-form").addEventListener("submit", function (e) {
+        e.preventDefault(); // stop immediate submit
+        // swap UI
+        document.getElementById("payment-content").classList.add("d-none");
+        document.getElementById("loading-content").classList.remove("d-none");
+        // simulate gateway redirect delay
+        setTimeout(() => {
+            e.target.submit(); // real POST to backend
+        }, 2000);
+    });
+
+    let timeLeft = 15;
+    const countdownEl = document.getElementById("countdown");
+    const timer = setInterval(() => {
+        timeLeft--;
+        countdownEl.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            window.location.href = "{{ url_for('payment_expired') }}";
+        }
+    }, 1000);
+</script>
+
+{% endblock content %}

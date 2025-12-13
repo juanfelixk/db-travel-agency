@@ -1,0 +1,29 @@
+{% extends "airline/base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Add Aircraft</h2>
+
+    <form method="POST">
+        <div class="mb-3">
+            <label class="form-label">Airline ID</label>
+            <input type="text" class="form-control" value="{{ airline_id }}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Aircraft Model</label>
+            <input type="text" name="model" class="form-control" placeholder="Example: Boeing 737-800" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Seat Layout</label>
+            <input type="text" name="seat_layout" class="form-control" placeholder="Example: 3-3 or 2-4-2" required>
+        </div>
+
+        <button class="btn btn-primary">Add Aircraft</button>
+        <a href="{{ url_for('airline_dashboard') }}" class="btn btn-secondary">Back</a>
+    </form>
+</div>
+
+{% endblock content%}

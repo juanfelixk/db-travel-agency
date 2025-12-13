@@ -1,0 +1,41 @@
+{% extends "airline/base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Aircraft List</h2>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Model</th>
+                <th>Seat Layout</th>
+                <th style="width: 80px; text-align: center;">Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if aircraft_list %}
+                {% for a in aircraft_list %}
+                    <tr>
+                        <td>{{ a.model }}</td>
+                        <td>{{ a.seat_layout }}</td>
+                        <td class="text-center">
+                            <form action="{{ url_for('delete_aircraft', aircraft_id=a.aircraft_id) }}" method="POST"
+                                  onsubmit="return confirm('Delete this aircraft?');">
+                                <button class="btn btn-sm btn-danger">&times;</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No aircraft found.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('airline_dashboard') }}" class="btn btn-secondary mt-3">Back</a>
+</div>
+
+{% endblock content %}

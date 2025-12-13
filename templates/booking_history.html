@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<h4 class="mb-4">Booking History</h4>
+
+<div class="accordion" id="bookingAccordion">
+    {% for b in bookings %}
+    <div class="accordion-item mb-2">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed custom-accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#booking{{ b.booking_id }}">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-semibold">Booking #{{ b.booking_id }}</span>
+                    <small class="text-muted ms-2">{{ b.booking_time.strftime('%d %b %Y') }}</small>
+                    <span class="badge bg-secondary ms-2">{{ b.status }}</span>
+                </div>
+                <span class="fw-semibold ms-3">
+                    Rp {{ "{:,.0f}".format(b.total_price).replace(",", ".") }}
+                </span>
+                {% if b.request %}
+                    {% if b.request.status == 'PENDING' %}
+                        <span class="badge bg-warning ms-4">
+                            {{ b.request.type.capitalize() }} Pending
+                        </span>
+                    {% elif b.request.status == 'APPROVED' %}
+                        <span class="badge bg-success ms-4">
+                            {{ b.request.type.capitalize() }} Approved
+                        </span>
+                    {% endif %}
+                {% endif %}
+            </button>
+        </h2>
+
+        <div id="booking{{ b.booking_id }}" class="accordion-collapse collapse">
+            <div class="accordion-body">
+
+                {% if b.flights %}
+                    <h6>Flights</h6>
+                    {% for f in b.flights %}
+                    <div class="border rounded p-2 mb-2">
+                        <strong>{{ f.airline_name }} — {{ f.flight_number }}</strong><br>
+                        {{ f.route }}<br>
+                        {{ f.departure.strftime('%d %b %Y %H:%M') }}
+                        →
+                        {{ f.arrival.strftime('%d %b %Y %H:%M') }}<br>
+                        Class: {{ f.fare_class }}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No flight details</p>
+                {% endif %}
+
+                {% if b.request.status == 'APPROVED' and b.request.type == 'REFUND' %}
+                    <div class="text-muted small mt-2 ms-auto">
+                        Refund amount should be reflected in your bank account within 7 working days from {{ b.request.resolved_at }}.
+                    </div>
+                {% endif %}
+
+                {% if b.request and b.request.type == 'RESCHEDULE' and b.request.status == 'APPROVED' %}
+                    <div class="text-muted small mt-2 ms-auto">
+                        To arrange rescheduled flight(s), please contact us at admin@company.com.
+                    </div>
+                {% endif %}
+
+                {% if b.status == 'PAID' and not b.request %}
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        {% if not b.request %}
+                            {% if b.can_reschedule %}
+                            <form method="POST" action="{{ url_for('request_reschedule', booking_id=b.booking_id) }}" class="request-form">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary" data-type="Reschedule">
+                                    Request Reschedule
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% if b.can_refund %}
+                            <form method="POST" action="{{ url_for('request_refund', booking_id=b.booking_id) }}" class="request-form">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" data-type="Refund">
+                                    Request Refund
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.querySelectorAll(".request-form").forEach(form => {
+    form.addEventListener("submit", function(e) {
+        const type = this.querySelector("button").dataset.type;
+        if(!confirm(`Are you sure you want to reques for ${type.toLowerCase()}?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+
+{% endblock content %}

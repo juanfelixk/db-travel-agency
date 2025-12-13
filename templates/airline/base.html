@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Airline Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
+          crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card mb-4">
+            <div class="card-body position-relative">
+
+                <!-- Home button on top-left -->
+                <a href="{{ url_for('airline_dashboard') }}" 
+                class="btn btn-outline-secondary position-absolute" 
+                style="top: 10px; right: 10px;">
+                    Home
+                </a>
+
+                <!-- Centered content stays centered -->
+                <h1 class="card-title text-center mt-2">Welcome, {{ airline_name }}.</h1>
+                <p class="card-text text-center">
+                    Manage your airline operations, add aircraft, and view flights here.
+                </p>
+
+                <div class="text-center">
+                    <a href="{{ url_for('add_flight') }}" class="btn btn-primary mt-3 mb-2">Add Flight</a>
+                    <a href="{{ url_for('add_aircraft') }}" class="btn btn-primary mt-3 mb-2">Add Aircraft</a>
+                </div>
+
+            </div>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    <strong>{{ message }}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content%}
+        {% endblock content%}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+</body>
+</html>

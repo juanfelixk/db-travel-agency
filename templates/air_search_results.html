@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content%}
+
+<div class="d-flex justify-content-between align-items-start">
+    <h3>{{ 'Return' if return_date else '' }}Flight Results</h3>
+</div>
+<p>
+    Departure Date: {{ first_flight["dep_date"] }}<br>
+    Arrival Date: {{ first_flight["arr_date"] }}<br>
+    Class: {{ seat_class }}<br><br>
+</p>
+{% if flights|length == 0 %}
+    <div class="alert alert-warning">No flights available.</div>
+{% else %}
+    {% for f in flights %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <div class="row align-items-start">
+                    <div class="col-md-6">
+                        <div>
+                            <h5>{{ f["airline_name"] }} — {{ f["flight_number"] }}</h5>
+                            <strong>{{ f["depart_airport_id"] }}</strong> → <strong>{{ f["arrival_airport_id"] }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        {{ f["model"] }}<br>
+                        {{ f["seat_layout"] }} (seat layout)
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ seat_class }}<br>
+                        <strong>Price:</strong> Rp {{ "{:,.0f}".format(f["price"]).replace(",", ".") }}/pax<br>
+                        <strong>Direct:</strong> {{ 'Yes' if f["direct"] else 'No' }}<br>
+                        <strong>Baggage:</strong> {{ f["baggage_kg"] }} kg<br>
+                        <strong>Cabin:</strong> {{ f["cabin_baggage_kg"] }} kg<br>
+                        <strong>Meal:</strong> {{ 'Yes' if f["meal"] else 'No' }}<br>
+                        <strong>Wifi:</strong> {{ 'Yes' if f["wifi"] else 'No' }}<br>
+                        <strong>Rescheduleable:</strong> {{ 'Yes' if f["rescheduleable"] else 'No'}}<br>
+                        <strong>Refundable:</strong> {{ 'Yes' if f["refundable"] else 'No'}}<br>
+                    </div>
+                    <div class="col-md-8 d-flex">
+                        <div class="text-end pe-3">
+                            <strong>{{ f["dep_city"] }} ({{ f["depart_airport_id"] }})</strong><br>
+                            {{ f["depart_airport_name"] }} Airport<br>
+                            {{ f["dep_terminal"] }}<br>
+                            {{ f["dep_time"] }}
+                        </div>
+                        <div class="position-relative w-25 my-2">
+                            <div style="border-top: 2px solid #0d6efd; width: 100%;"></div>
+                            <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 4px;">
+                                {{ f["duration"] }}
+                            </div>
+                        </div>
+                        <div class="ps-3">
+                            <strong>{{ f["arr_city"] }} ({{ f["arrival_airport_id"] }})</strong><br>
+                            {{ f["arrival_airport_name"] }} Airport<br>
+                            {{ f["arr_terminal"] }}<br>
+                            {{ f["arr_time"] }}
+                        </div>
+                    </div>
+                </div>
+                <form method="POST" action="{{ url_for('choose_flight') }}">
+                    <input type="hidden" name="flight_id" value="{{ f['flight_id'] }}">
+                    <input type="hidden" name="seat_class" value="{{ seat_class }}">
+                    <input type="hidden" name="direction" value="{{ direction }}"> <!-- dep or return -->
+                    <button type="submit" class="btn btn-primary w-10 float-end">Choose</button>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% endblock content%}

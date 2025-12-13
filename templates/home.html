@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content%}
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- TOP CARD -->
+<div class="search-card">
+    {% if session.get('user_id') %}
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" id="searchTab">
+        <li class="nav-item">
+            <a class="nav-link tab-active" id="flight-tab" onclick="showTab('flight')">Flights</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="accommodation-tab" onclick="showTab('accommodation')">Accommodation</a>
+        </li>
+    </ul>
+
+    <!-- FLIGHT SEARCH CARD -->
+    <div id="flight-section">
+        <form method="GET" action="/search-flights">
+            <div class="row mb-3">
+                <div class="col position-relative">
+                    <label>From</label>
+                    <input type="text" id="from_input" class="form-control" autocomplete="off">
+                    <div id="from_suggestions" class="list-group position-absolute w-100" style="z-index: 1000; max-height: 250px; overflow-y: auto;"></div>
+                </div>
+
+                <div class="col position-relative">
+                    <label>To</label>
+                    <input type="text" id="to_input" class="form-control" autocomplete="off">
+                    <div id="to_suggestions" class="list-group position-absolute w-100" style="z-index: 1000; max-height: 250px; overflow-y: auto;"></div>
+                </div>
+            </div>
+            <!-- Hidden fields so form submits airport IDs -->
+            <input type="hidden" name="from_airport" id="from_value">
+            <input type="hidden" name="to_airport" id="to_value">
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label>Departure Date</label>
+                    <input type="date" name="departure_date" class="form-control" required>
+                </div>
+                <div class="col">
+                    <label>Return Date (optional)</label>
+                    <input type="date" name="return_date" class="form-control">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label>Passengers</label>
+                    <input type="number" name="passengers" class="form-control" min="1" value="1" required>
+                </div>
+                <div class="col">
+                    <label>Seat Class</label>
+                    <select name="seat_class" class="form-select">
+                        <option value="ECONOMY">Economy</option>
+                        <option value="BUSINESS">Business</option>
+                        <option value="FIRST">First</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary w-100 mt-2">Search Flights</button>
+        </form>
+    </div>
+
+    <!-- ACCOMMODATION TEMPLATE (NO BACKEND YET) -->
+    <div id="accommodation-section" style="display: none;">
+        <form>
+            <div class="row mb-3">
+                <div class="col">
+                    <label>Location</label>
+                    <input type="text" class="form-control" placeholder="City, Hotel Name, or Area">
+                </div>
+                <div class="col">
+                    <label>Type</label>
+                    <select class="form-select">
+                        <option>Hotel</option>
+                        <option>Villa</option>
+                        <option>Apartment</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label>Check-In</label>
+                    <input type="date" class="form-control">
+                </div>
+                <div class="col">
+                    <label>Check-Out</label>
+                    <input type="date" class="form-control">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label>Guests</label>
+                    <input type="number" class="form-control" min="1" value="1">
+                </div>
+                <div class="col">
+                    <label>Rooms</label>
+                    <input type="number" class="form-control" min="1" value="1">
+                </div>
+            </div>
+
+            <button class="btn btn-primary w-100 mt-2" disabled>Search (Coming Soon)</button>
+        </form>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <h4>Welcome to Our Company</h4>
+        <p>Please login or signup to search for flights and accommodations.</p>
+        <a href="{{ url_for('login_customer') }}" class="btn btn-primary">Login or Signup Here</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function showTab(type) {
+    const flightTab = document.getElementById("flight-section");
+    const accTab = document.getElementById("accommodation-section");
+    const fBtn = document.getElementById("flight-tab");
+    const aBtn = document.getElementById("accommodation-tab");
+
+    if (type === 'flight') {
+        flightTab.style.display = 'block';
+        accTab.style.display = 'none';
+        fBtn.classList.add('tab-active');
+        aBtn.classList.remove('tab-active');
+    } else {
+        flightTab.style.display = 'none';
+        accTab.style.display = 'block';
+        aBtn.classList.add('tab-active');
+        fBtn.classList.remove('tab-active');
+    }
+    }
+
+    function setupAirportAutocomplete(inputId, dropdownId, hiddenId) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+    const hidden = document.getElementById(hiddenId);
+
+    let currentResults = [];
+
+    input.addEventListener("input", async () => {
+        const query = input.value.trim();
+        dropdown.innerHTML = "";
+        hidden.value = "";
+
+        if (query.length < 1) return;
+
+        const res = await fetch(`/search_airport?q=${encodeURIComponent(query)}`);
+        currentResults = await res.json();
+
+        currentResults.forEach(a => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "list-group-item list-group-item-action";
+            item.textContent = `${a.airport_id} - ${a.airport_name} (${a.city}, ${a.country})`;
+            item.onclick = () => {
+                selectAirport(a);
+            };
+            dropdown.appendChild(item);
+        });
+    });
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (currentResults.length > 0) {
+                selectAirport(currentResults[0]);
+            }
+            dropdown.innerHTML = "";
+        }
+    });
+    function selectAirport(a) {
+        input.value = `${a.airport_name} (${a.airport_id})`;
+        hidden.value = a.airport_id;
+        dropdown.innerHTML = "";
+    }
+    input.addEventListener("blur", () => {
+        setTimeout(() => {
+            if (!hidden.value) input.value = "";
+        }, 150);
+    });
+    document.addEventListener("click", (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.innerHTML = "";
+        }
+    });
+    }
+
+    setupAirportAutocomplete("from_input", "from_suggestions", "from_value");
+    setupAirportAutocomplete("to_input", "to_suggestions", "to_value");
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" 
+integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+{% endblock content%}

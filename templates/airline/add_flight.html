@@ -1,0 +1,166 @@
+{% extends "airline/base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2>Add New Flight</h2>
+
+    <form method="POST">
+
+        <div class="card mt-4 mb-4">
+            <div class="card-header">Flight Information</div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label>Flight Number</label>
+                    <input name="flight_number" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label>Aircraft</label>
+                    <select name="aircraft_id" class="form-select" required>
+                        {% for a in aircraft_list %}
+                            <option value="{{ a.aircraft_id }}">{{ a.model }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Departure Airport</label>
+                        <select name="departure_airport" class="form-select" required>
+                            {% for ap in airport_list %}
+                                <option value="{{ ap.airport_id }}">{{ ap.airport_id }} - {{ ap.airport_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col">
+                        <label>Arrival Airport</label>
+                        <select name="arrival_airport" class="form-select" required>
+                            {% for ap in airport_list %}
+                                <option value="{{ ap.airport_id }}">{{ ap.airport_id }} - {{ ap.airport_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Departure Terminal</label>
+                        <input name="departure_terminal" class="form-control">
+                    </div>
+                    <div class="col">
+                        <label>Arrival Terminal</label>
+                        <input name="arrival_terminal" class="form-control">
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Departure Time</label>
+                        <input type="time" name="departure_time" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label>Arrival Time</label>
+                        <input type="time" name="arrival_time" class="form-control" required>
+                        <small class="form-text text-muted">If arrival time ≤ departure time, arrival is next day</small>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" class="form-control" required>
+                        <small class="form-text text-muted">First date this schedule runs</small>
+                    </div>
+                    <div class="col">
+                        <label>Recurrence</label>
+                        <select name="recurrence" class="form-select" required>
+                            <option value="1">Once</option>
+                            <option value="3">3 days (every day for 3 days)</option>
+                            <option value="7">7 days (every day for 7 days)</option>
+                            <option value="30">1 month (every 30 days)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-3 form-check">
+                    <input type="checkbox" class="form-check-input" checked disabled>
+                    <input type="hidden" name="direct" value="1">
+                    <label class="form-check-label">Direct Flight</label>
+                </div>
+
+            </div>
+        </div>
+
+        <h4>Fare Classes</h4>
+
+        {% for fc in ["economy", "business", "first"] %}
+        <div class="card mt-3">
+            <div class="card-header text-uppercase">{{ fc }} class</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label>Price</label>
+                    <input name="{{ fc }}_price" type="number" step="0.01" class="form-control" required>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Checked Baggage (kg)</label>
+                        <input name="{{ fc }}_baggage" type="number" class="form-control" required>
+                    </div>
+                    <div class="col">
+                        <label>Cabin Baggage (kg)</label>
+                        <input name="{{ fc }}_cabin" type="number" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col">
+                        <div class="form-check">
+                            <input type="checkbox" name="{{ fc }}_refundable" class="form-check-input">
+                            <label class="form-check-label">Refundable</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-check">
+                            <input type="checkbox" name="{{ fc }}_reschedulable" class="form-check-input">
+                            <label class="form-check-label">Reschedulable</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-check">
+                            <input type="checkbox" name="{{ fc }}_meal" class="form-check-input">
+                            <label class="form-check-label">Meal</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-check">
+                            <input type="checkbox" name="{{ fc }}_entertainment" class="form-check-input">
+                            <label class="form-check-label">Entertainment</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-check">
+                            <input type="checkbox" name="{{ fc }}_wifi" class="form-check-input">
+                            <label class="form-check-label">WiFi</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="row mt-4 mb-4">
+            <div class="col text-start">
+                <a href="{{ url_for('airline_dashboard') }}" class="btn btn-secondary">Back</a>
+            </div>
+            <div class="col text-end">
+                <button class="btn btn-primary">Create Flight</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

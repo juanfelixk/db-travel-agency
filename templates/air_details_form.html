@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content%}
+
+<form method="POST">
+    <div class="row">
+        <!-- LEFT COLUMN: Contact & Passenger Info -->
+        <div class="col-md-7">
+            <!-- Section 1: Contact Info -->
+            <div class="card mb-3 p-3">
+                <h5>Contact Information</h5>
+                Please visit account page to change contact details.
+                <div class="mb-2 mt-4">
+                    <label>Name</label>
+                    <input type="text" name="contact_name" class="form-control" value="{{ customer['name'] }}" disabled>
+                </div>
+                <div class="mb-2">
+                    <label>Email</label>
+                    <input type="email" name="contact_email" class="form-control" value="{{ customer['email'] }}" disabled>
+                </div>
+                <div class="mb-2">
+                    <label>Mobile</label>
+                    <input type="text" name="contact_mobile" class="form-control" value="{{ customer['mobile'] }}" disabled>
+                </div>
+            </div>
+
+            <!-- Section 2: Traveler Details -->
+            <div class="card mb-3 p-3">
+                <h5>Traveler Details</h5>
+                {% for i in range(1, passengers_count + 1) %}
+                <div class="mb-3 border-bottom pb-4">
+                    <h6>Passenger {{ i }}</h6>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>Title</label>
+                            <select name="title_{{ i }}" class="form-select" required>
+                                <option>MR</option>
+                                <option>MS</option>
+                                <option>MRS</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label>Full Name</label>
+                            <input type="text" name="full_name_{{ i }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Date of Birth</label>
+                            <input type="date" name="dob_{{ i }}" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <label>Nationality</label>
+                        <input type="text" name="nationality_{{ i }}" class="form-control" required>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-4">Confirm Booking</button>
+        </div>
+
+        <!-- RIGHT COLUMN: Flight Summary -->
+        <div class="col-md-5">
+            <div class="card p-3">
+                <h5>Departure Flight</h5>
+                <p>
+                    <strong>{{ dep_flight['airline_name'] }} — {{ dep_flight['flight_number'] }}</strong><br>
+                    Date: {{ dep_flight['dep_date'] }}<br>
+                    Departure: {{ dep_flight['dep_city'] }} ({{ dep_flight['dep_airport'] }}) at {{ dep_flight['dep_time'] }}<br>
+                    Arrival: {{ dep_flight['arr_city'] }} ({{ dep_flight['arr_airport'] }}) at {{ dep_flight['arr_time'] }}<br>
+                    Class: {{ dep_flight['fare_class'] }}<br>
+                    Total Price: Rp {{ "{:,.0f}".format(dep_flight["price"]).replace(",", ".") }} ({{ passengers_count }} pax)
+                </p>
+            </div>
+
+            {% if ret_flight %}
+            <div class="card p-3 mt-2">
+                <h5>Return Flight</h5>
+                <p>
+                    <strong>{{ ret_flight['airline_name'] }} — {{ ret_flight['flight_number'] }}</strong><br>
+                    Date: {{ ret_flight['dep_date'] }}<br>
+                    Departure: {{ ret_flight['dep_city'] }} ({{ ret_flight['dep_airport'] }}) at {{ ret_flight['dep_time'] }}<br>
+                    Arrival: {{ ret_flight['arr_city'] }} ({{ ret_flight['arr_airport'] }}) at {{ ret_flight['arr_time'] }}<br>
+                    Class: {{ ret_flight['fare_class'] }}<br>
+                    Total Price: Rp {{ "{:,.0f}".format(ret_flight["price"]).replace(",", ".") }} ({{ passengers_count }} pax)
+                </p>
+            </div>
+            {% endif %}
+
+            <div class="card p-3 mt-4">
+                <h6>Total for {{ passengers_count }} passengers</h6>
+                Rp {{ "{:,.0f}".format((dep_flight.price + (ret_flight.price if ret_flight else 0)) * passengers_count).replace(",", ".") }}
+            </div>
+        </div>
+    </div>
+</form>
+
+{% endblock content%}
