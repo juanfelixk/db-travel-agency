@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<!-- ===== Row 1 ===== -->
+<div class="d-flex gap-3 mb-3">
+    <div class="card" style="flex: 1 1 0;">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">Flights</h5>
+            <p class="card-text">
+                View and create flight and fare in one flow.
+            </p>
+            <a href="{{ url_for('admin_view_flight') }}" class="btn btn-outline-primary mt-auto">
+                View Flights
+            </a>
+        </div>
+    </div>
+
+    <div class="card" style="flex: 1 1 0;">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">Aircrafts</h5>
+            <p class="card-text">
+                View and add aircraft per airline.
+            </p>
+            <a href="{{ url_for('admin_view_aircraft' )}}" class="btn btn-outline-primary mt-auto">
+                View Aircrafts
+            </a>
+        </div>
+    </div>
+
+    <div class="card" style="flex: 1 1 0;">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">Airports</h5>
+            <p class="card-text">
+                View and register new airports and timezone data.
+            </p>
+            <a href="{{ url_for('admin_view_airport' )}}" class="btn btn-outline-primary mt-auto">
+                View Airports
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Row 2 ===== -->
+<div class="d-flex gap-3">
+    <div class="card" style="flex: 1 1 0;">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">Accommodations</h5>
+            <p class="card-text">
+                View and create room types, and room rates together.
+            </p>
+            <a href="{{ url_for('admin_view_accommodation') }}" class="btn btn-outline-primary mt-auto">
+                View Accommodations
+            </a>
+        </div>
+    </div>
+
+    <div class="card" style="flex: 1 1 0;">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">Requests</h5>
+            <p class="card-text">
+                Approve or reject refund and reschedule requests.
+            </p>
+            <a href="{{ url_for('admin_view_request' )}}" class="btn btn-outline-primary mt-auto">
+                View Requests
+            </a>
+        </div>
+    </div>
+
+    <div class="card" style="flex: 1 1 0;">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">Business Accounts</h5>
+            <p class="card-text">
+                View an create airline and accommodation business accounts.
+            </p>
+            <a href="{{ url_for('admin_view_account' )}}" class="btn btn-outline-primary mt-auto">
+                View Accounts
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="text-end mt-5">
+    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+</div>
+
+{% endblock %}

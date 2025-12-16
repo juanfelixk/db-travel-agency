@@ -1,0 +1,77 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4 class="mb-4">Add Business Account</h4>
+
+<form method="POST" class="card p-4">
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label>Email</label>
+            <input name="email" class="form-control" required>
+        </div>
+
+        <div class="col-md-6">
+            <label>Password</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+
+        <div class="col-md-6">
+            <label>Name of PIC (optional)</label>
+            <input name="name" class="form-control">
+        </div>
+
+        <div class="col-md-6">
+            <label>Mobile of PIC (optional)</label>
+            <input name="mobile" class="form-control">
+        </div>
+
+        <div class="col-md-6">
+            <label>Business Type</label>
+            <select name="role" id="roleSelect" class="form-select" required>
+                <option value="">Select</option>
+                <option value="business_airline">Airline</option>
+                <option value="business_accommodation">Accommodation</option>
+            </select>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Airline -->
+    <div id="airlineBox" style="display:none;">
+        <h6>Airline</h6>
+        <input name="airline_id" class="form-control mb-2" placeholder="ICAO Code">
+        <input name="airline_name" class="form-control" placeholder="Airline Name">
+    </div>
+
+    <!-- Accommodation -->
+    <div id="propertyBox" style="display:none;">
+        <h6>Property</h6>
+        <input name="property_name" class="form-control mb-2" placeholder="Property Name">
+        <select name="property_type" class="form-select mb-2">
+            <option value="HOTEL">Hotel</option>
+            <option value="APARTMENT">Apartment</option>
+            <option value="VILLA">Villa</option>
+        </select>
+        <textarea name="address" class="form-control mb-2" placeholder="Address"></textarea>
+        <input name="city" class="form-control mb-2" placeholder="City">
+        <input name="country" class="form-control mb-2" placeholder="Country">
+        <input type="number" name="star" class="form-control" placeholder="Star (1–5)">
+    </div>
+
+    <div class="text-end mt-4">
+        <button class="btn btn-primary">Create</button>
+    </div>
+
+</form>
+
+<script>
+document.getElementById("roleSelect").addEventListener("change", e => {
+    airlineBox.style.display = e.target.value === "business_airline" ? "block" : "none";
+    propertyBox.style.display = e.target.value === "business_accommodation" ? "block" : "none";
+});
+</script>
+
+{% endblock %}

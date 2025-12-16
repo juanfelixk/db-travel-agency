@@ -1,0 +1,28 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4 class="mb-4">Select Airline</h4>
+
+<form method="POST" class="card p-4 col-md-6">
+    <label class="form-label">Airline</label>
+    <select name="airline_id" class="form-select mb-3" required>
+        <option value="">-- Select Airline --</option>
+        {% for a in airlines %}
+        <option value="{{ a.airline_id }}">
+            {{ a.airline_name }} ({{ a.airline_id }})
+        </option>
+        {% endfor %}
+    </select>
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-primary">View Aircraft</button>
+    </div>
+</form>
+
+<a href="{{ url_for('admin_dashboard') }}"
+    class="btn btn-outline-secondary mt-3">
+    ← Back to Dashboard
+</a>
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between mb-3">
+    <h4>Business Accounts</h4>
+    <a href="{{ url_for('admin_add_account') }}" class="btn btn-primary">
+        Add Business Account
+    </a>
+</div>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Owned Entity</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in accounts %}
+        <tr>
+            <td>{{ a.email }}</td>
+            <td>
+                {% if a.role == 'business_airline' %}
+                    Airline
+                {% elif a.role == 'business_accommodation' %}
+                    Accommodation
+                {% endif %}
+            </td>
+            <td>
+                {% if a.role == 'business_airline' %}
+                    {{ a.airline_name }} ({{ a.airline_id }})
+                {% else %}
+                    {{ a.property_name or '-' }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

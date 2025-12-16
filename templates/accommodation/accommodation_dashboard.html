@@ -1,0 +1,57 @@
+{% extends "accommodation/base.html" %}
+
+{% block content %}
+
+<div class="row">
+    {% if not has_property %}
+    <div class="col-md-12">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Complete Property Account</h5>
+                <p class="card-text">
+                    Before you can add room types or rates, complete your property details.
+                </p>
+                <a href="{{ url_for('accommodation_account') }}" class="btn btn-primary">
+                    Complete Property Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Room Types</h5>
+                <p class="card-text">
+                    Add and manage room types and their pricing plans.
+                </p>
+                <a href="{{ url_for('view_room_type') }}" class="btn btn-outline-primary">
+                    View Room Types
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Account</h5>
+                <p class="card-text">
+                    Update your property details and account information.
+                </p>
+                <a href="{{ url_for('accommodation_account') }}" class="btn btn-outline-primary">
+                    Settings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<div class="text-end mt-5">
+    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+</div>
+
+{% endblock %}

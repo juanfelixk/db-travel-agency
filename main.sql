@@ -8,7 +8,7 @@ CREATE TABLE account (
     password VARCHAR(255) NOT NULL,
     name VARCHAR(255),
     mobile VARCHAR(20),
-    role ENUM('customer', 'business_airline', 'business_hotel', 'business_car', 'admin') NOT NULL,
+    role ENUM('customer', 'business_airline', 'business_accommodation') NOT NULL,
     PRIMARY KEY (account_id),
     UNIQUE KEY uq_account_email (email)
 );
@@ -17,6 +17,8 @@ VALUES
 ('juan@customer.com', 'juan', 'Juan Felix Kusnadi', '082249449937', 'customer'),
 ('klm@klm.com', 'klm', NULL, NULL, 'business_airline'),
 ('gia@gia.com', 'gia', NULL, NULL, 'business_airline');
+INSERT INTO account (email, password, name, mobile, role)
+VALUES ('property@property.com', 'Property Company', NULL, NULL, 'business_accommodation');
 
 /* ===========================================================
    AIRLINE (Owned by business accounts)
@@ -115,7 +117,7 @@ INSERT INTO flight (
 )
 VALUES
 ('KLM', 'KL 390', 1, 'CGK', 'KUL', 'Terminal 3', 'Terminal 2', '2025-01-15 08:00:00', '2025-01-15 10:40:00', TRUE),
-('KLM', 'KL 391', 2, 'KUL', 'CGK', 'Terminal 2', 'Terminal 3', '2025-01-16 09:30:00', '2025-01-16 13:15:00', TRUE);
+('KLM', 'KL 391', 2, 'KUL', 'CGK', 'Terminal 2', 'Terminal 3', '2025-01-16 09:30:00', '2025-01-16 10:15:00', TRUE);
 
 /* ===========================================================
    FLIGHT FARES (Three classes, each single price)
@@ -154,7 +156,7 @@ VALUES
 
 CREATE TABLE payment (
     payment_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    payment_method VARCHAR(50) NOT NULL,
+    payment_method VARCHAR(50) NOT NULL DEFAULT 'CREDIT CARD',
     amount_paid DECIMAL(12,2) NOT NULL,
     payment_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (payment_id)
@@ -177,6 +179,32 @@ CREATE TABLE booking (
         ON UPDATE CASCADE ON DELETE RESTRICT,
 	FOREIGN KEY (payment_id) REFERENCES payment(payment_id)
 		ON UPDATE CASCADE ON DELETE SET NULL
+);
+INSERT INTO booking (
+    customer_id,
+    booking_time,
+    status,
+    total_price,
+    payment_id,
+    expires_at
+) VALUES
+-- Booking for Jakarta Grand Hotel (Deluxe Room)
+(
+    1,
+    '2025-02-01 10:15:00',
+    'PAID',
+    2400000.00,
+    NULL,
+    '2025-02-01 23:59:59'
+),
+-- Booking for Ubud Green Villa
+(
+    1,
+    '2025-02-20 14:30:00',
+    'PAID',
+    3500000.00,
+    NULL,
+    '2025-02-20 23:59:59'
 );
 
 CREATE TABLE flight_booking (
@@ -209,6 +237,8 @@ CREATE TABLE passenger (
 CREATE TABLE booking_request (
     request_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     booking_id INT UNSIGNED NOT NULL,
+    service_type ENUM('FLIGHT', 'ACCOMMODATION') NOT NULL,
+    service_type_id INT UNSIGNED NOT NULL,
     request_type ENUM('REFUND', 'RESCHEDULE') NOT NULL,
     reason TEXT,
     status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
@@ -217,9 +247,9 @@ CREATE TABLE booking_request (
     CONSTRAINT fk_booking_request_booking
         FOREIGN KEY (booking_id)
         REFERENCES booking(booking_id)
-        ON DELETE CASCADE,
+        ON DELETE CASCADE, 
     CONSTRAINT uq_booking_pending_request
-        UNIQUE (booking_id, status)
+        UNIQUE (booking_id, status, service_type, service_type_id)
 );
 
 CREATE VIEW flight_overview AS
@@ -240,12 +270,184 @@ JOIN aircraft a ON f.aircraft_id = a.aircraft_id
 JOIN airport dap ON f.departure_airport_id = dap.airport_id
 JOIN airport aap ON f.arrival_airport_id = aap.airport_id;
 
-SELECT * FROM flight;
+CREATE TABLE property (
+    property_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    business_owner_id INT UNSIGNED NOT NULL,
+    property_type ENUM('HOTEL','APARTMENT','VILLA') NOT NULL,
+    property_name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    star TINYINT UNSIGNED NOT NULL CHECK (star BETWEEN 1 AND 5),
+    rating DECIMAL(2,1) DEFAULT NULL,
+    rating_count INT UNSIGNED DEFAULT 0,
+    check_in_time TIME NOT NULL DEFAULT '14:00:00',
+    check_out_time TIME NOT NULL DEFAULT '12:00:00',
+    FOREIGN KEY (business_owner_id) REFERENCES account(account_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE room_type (
+    room_type_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    property_id INT UNSIGNED NOT NULL,
+    room_name VARCHAR(100) NOT NULL,      -- e.g. Deluxe, Studio
+    max_guests INT NOT NULL CHECK (max_guests > 0),
+    bed_type VARCHAR(50),
+    size_sqm INT,
+    total_rooms INT NOT NULL CHECK (total_rooms > 0),
+    FOREIGN KEY (property_id)
+        REFERENCES property(property_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    UNIQUE KEY uq_room_type (property_id, room_name)
+);
+
+CREATE TABLE room_rate (
+    room_rate_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    room_type_id INT UNSIGNED NOT NULL,
+    plan_name VARCHAR(100) NOT NULL,       -- e.g. Room Only, Breakfast Included
+    breakfast_included BOOLEAN DEFAULT FALSE,
+    price_per_night DECIMAL(12,2) NOT NULL CHECK (price_per_night > 0),
+    refundable BOOLEAN DEFAULT FALSE,
+    reschedulable BOOLEAN DEFAULT FALSE,
+    valid_from DATE NOT NULL,
+    valid_to DATE NOT NULL,
+    FOREIGN KEY (room_type_id) REFERENCES room_type(room_type_id)
+		ON UPDATE CASCADE ON DELETE CASCADE,
+    CHECK (valid_from <= valid_to),
+    UNIQUE KEY uq_room_rate_plan_period (
+        room_type_id, plan_name, valid_from, valid_to
+    )
+);
+
+CREATE TABLE accommodation_booking (
+    accommodation_booking_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    booking_id INT UNSIGNED NOT NULL,
+    room_rate_id INT UNSIGNED NOT NULL,
+    room_type_id INT UNSIGNED NOT NULL,
+    room_count INT NOT NULL CHECK (room_count > 0),
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    guest_count TINYINT UNSIGNED NOT NULL,
+    FOREIGN KEY (booking_id) REFERENCES booking(booking_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (room_rate_id) REFERENCES room_rate(room_rate_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (room_type_id) REFERENCES room_type(room_type_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CHECK (check_in < check_out)
+);
+
+CREATE TABLE accommodation_guest (
+    guest_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    accommodation_booking_id INT UNSIGNED NOT NULL,
+    full_name VARCHAR(255),
+    FOREIGN KEY (accommodation_booking_id)
+        REFERENCES accommodation_booking(accommodation_booking_id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE INDEX idx_room_rate_room_type ON room_rate(room_type_id);
+CREATE INDEX idx_accommodation_booking_booking ON accommodation_booking(booking_id);
+CREATE INDEX idx_room_type_property ON room_type(property_id);
+CREATE INDEX idx_accommodation_booking_dates ON accommodation_booking(room_rate_id, check_in, check_out);
+
+INSERT INTO property (
+    business_owner_id,
+    property_type,
+    property_name,
+    address,
+    city,
+    country,
+    description,
+    rating,
+    rating_count,
+    check_in_time,
+    check_out_time,
+    star
+) VALUES
+(4, 'HOTEL', 'Jakarta Grand Hotel',
+ 'Jl. Sudirman No. 10', 'Jakarta', 'Indonesia',
+ 'Luxury hotel in the heart of Jakarta',
+ 4.5, 1200, '14:00:00', '12:00:00', 4),
+
+(4, 'APARTMENT', 'Central Park Residence',
+ 'Jl. Letjen S. Parman', 'Jakarta', 'Indonesia',
+ 'Modern serviced apartment near shopping malls',
+ 4.2, 540, '14:00:00', '12:00:00', NULL),
+
+(4, 'VILLA', 'Ubud Green Villa',
+ 'Jl. Raya Ubud', 'Ubud', 'Indonesia',
+ 'Private villa surrounded by nature',
+ 4.8, 310, '14:00:00', '11:00:00', 5);
+
+INSERT INTO room_type (
+    property_id,
+    room_name,
+    max_guests,
+    bed_type,
+    size_sqm,
+    total_rooms
+) VALUES
+-- Jakarta Grand Hotel
+(1, 'Deluxe Room', 2, 'Queen Bed', 32, 50),
+(1, 'Executive Room', 2, 'King Bed', 40, 30),
+
+-- Central Park Residence
+(2, 'Studio', 2, 'Queen Bed', 28, 40),
+(2, 'One Bedroom', 4, 'Queen + Sofa Bed', 45, 25),
+
+-- Ubud Green Villa
+(3, 'Private Villa', 4, 'King Bed', 80, 10);
+
+INSERT INTO room_rate (
+    room_type_id,
+    plan_name,
+    breakfast_included,
+    price_per_night,
+    refundable,
+    reschedulable,
+    valid_from,
+    valid_to
+) VALUES
+-- Deluxe Room (Hotel)
+(1, 'Room Only', FALSE, 1200000, TRUE, TRUE, '2025-01-01', '2025-06-30'),
+(1, 'Breakfast Included', TRUE, 1350000, TRUE, TRUE, '2025-01-01', '2025-06-30'),
+(1, 'Room Only', FALSE, 1500000, TRUE, TRUE, '2025-07-01', '2025-12-31'),
+(1, 'Breakfast Included', TRUE, 1650000, TRUE, TRUE, '2025-07-01', '2025-12-31'),
+-- Executive Room (Hotel)
+(2, 'Room Only', FALSE, 1800000, TRUE, TRUE, '2025-01-01', '2025-12-31'),
+(2, 'Breakfast Included', TRUE, 2000000, TRUE, TRUE, '2025-01-01', '2025-12-31'),
+-- Studio (Apartment)
+(3, 'Room Only', FALSE, 900000, FALSE, FALSE, '2025-01-01', '2025-12-31'),
+-- One Bedroom (Apartment)
+(4, 'Room Only', FALSE, 1400000, TRUE, FALSE, '2025-01-01', '2025-12-31'),
+(4, 'Breakfast Included', TRUE, 1550000, TRUE, FALSE, '2025-01-01', '2025-12-31'),
+-- Villa
+(5, 'Villa Package', TRUE, 3500000, TRUE, TRUE, '2025-01-01', '2025-12-31');
+
+INSERT INTO accommodation_booking (
+    booking_id,
+    room_rate_id,
+    room_count,
+    check_in,
+    check_out,
+    room_type_id,
+    guest_count
+) VALUES
+(1, 1, 1, '2025-02-10', '2025-02-12', 1, 2),
+(2, 5, 1, '2025-03-01', '2025-03-05', 1, 2);
+
+INSERT INTO accommodation_guest (
+    accommodation_booking_id,
+    full_name
+) VALUES
+(1, 'Juan Felix Kusnadi'),
+(2, 'Andi Wijaya'),
+(2, 'Siti Rahma');
+
 SELECT * FROM flight_fare;
-SELECT * FROM booking;
-SELECT * FROM flight_booking;
-SELECT * FROM passenger;
-SELECT * FROM payment;
+SELECT * FROM property;
+SELECT * FROM room_rate;
+SELECT * FROM accommodation_booking;
+SELECT * FROM accommodation_guest;
 SELECT * FROM booking_request;
-UPDATE booking_request SET status = 'APPROVED', resolved_at = '2025-12-13 20.55.00' WHERE request_id = 7;
-DELETE FROM booking_request WHERE request_id IN (1,2,3,4,5,6,7,8,9,10);
+UPDATE booking_request SET resolved_at = '2025-12-14 15:00:00' WHERE request_id IN (1,2);

@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Aircraft – {{ airline.airline_name }}</h4>
+    <a href="{{ url_for('admin_add_aircraft', airline_id=airline_id) }}"
+       class="btn btn-primary">
+        Add Aircraft
+    </a>
+</div>
+
+{% if not aircrafts %}
+<div class="alert alert-warning">No aircraft registered.</div>
+{% endif %}
+
+{% if aircrafts %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Seat Layout</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in aircrafts %}
+        <tr>
+            <td>{{ a.model }}</td>
+            <td>{{ a.seat_layout }}</td>
+            <td>
+                <a href="{{ url_for('admin_delete_aircraft', aircraft_id=a.aircraft_id) }}"
+                   class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('Delete this aircraft?');">
+                    Delete
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<a href="{{ url_for('admin_view_aircraft') }}" class="btn btn-outline-secondary mt-1">
+    ← Change Airline
+</a>
+
+{% endblock %}

@@ -20,8 +20,7 @@
         <select class="form-select" id="business_type" name="business_type" required>
             <option value="">Select type</option>
             <option value="airline">Airline</option>
-            <option value="hotel">Hotel</option>
-            <option value="car">Car Rental</option>
+            <option value="accommodation">Accommodation</option>
         </select>
     </div>
 
@@ -33,18 +32,6 @@
     <div class="mb-3 business-field airline-field d-none">
         <label for="airline_id" class="form-label">ICAO Code</label>
         <input type="text" class="form-control" id="airline_id" name="airline_id">
-    </div>
-
-    <!-- Hotel fields -->
-    <div class="mb-3 business-field hotel-field d-none">
-        <label for="hotel_name" class="form-label">Hotel Name</label>
-        <input type="text" class="form-control" id="hotel_name" name="hotel_name">
-    </div>
-
-    <!-- Car rental fields -->
-    <div class="mb-3 business-field car-field d-none">
-        <label for="company_name" class="form-label">Company Name</label>
-        <input type="text" class="form-control" id="company_name" name="company_name">
     </div>
 
     <div class="d-grid mt-3">
@@ -59,8 +46,6 @@
 <script>
     const businessTypeSelect = document.getElementById('business_type');
     const airlineFields = document.querySelectorAll('.airline-field');
-    const hotelFields = document.querySelectorAll('.hotel-field');
-    const carFields = document.querySelectorAll('.car-field');
 
     businessTypeSelect.addEventListener('change', () => {
         const type = businessTypeSelect.value;

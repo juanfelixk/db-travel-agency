@@ -1,0 +1,72 @@
+{% extends "accommodation/base.html" %}
+
+{% block content %}
+
+<div class="container my-4">
+    <h4 class="mb-3">Property Account</h4>
+
+    <form method="POST">
+        <div class="card p-3 mb-3">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Property Type</label>
+                    <select class="form-select" id="property_type" name="property_type" required>
+                        <option value="HOTEL" {% if prop and prop['property_type']=='HOTEL' %}selected{% endif %}>Hotel</option>
+                        <option value="APARTMENT" {% if prop and prop['property_type']=='APARTMENT' %}selected{% endif %}>Apartment</option>
+                        <option value="VILLA" {% if prop and prop['property_type']=='VILLA' %}selected{% endif %}>Villa</option>
+                    </select>
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label">Property Name</label>
+                    <input type="text" class="form-control" name="property_name" required
+                        value="{{ prop.property_name if prop else '' }}">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Address</label>
+                    <textarea class="form-control" name="address" rows="2" required>{{ prop.address if prop else '' }}</textarea>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">City</label>
+                    <input type="text" class="form-control" name="city" required value="{{ prop.city if prop else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Country</label>
+                    <input type="text" class="form-control" name="country" required value="{{ prop.country if prop else '' }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Check-in time</label>
+                    <input type="time" class="form-control" name="check_in_time" value="{{ prop.check_in_time if prop else '14:00:00' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Check-out time</label>
+                    <input type="time" class="form-control" name="check_out_time" value="{{ prop.check_out_time if prop else '12:00:00' }}">
+                </div>
+
+                <div class="col-md-3" id="star_wrapper" style="display: {% if prop and prop.property_type=='HOTEL' %}block{% else %}none{% endif %};">
+                    <label class="form-label">Star (1-5)</label>
+                    <input type="number" min="1" max="5" class="form-control" name="star" value="{{ prop.star if prop and prop.star is not none else '' }}">
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{{ url_for('accommodation_dashboard') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // toggle star input visibility based on property_type selection
+    document.getElementById('property_type').addEventListener('change', function () {
+        const val = this.value;
+        const wrapper = document.getElementById('star_wrapper');
+        if (val === 'HOTEL') wrapper.style.display = 'block';
+        else wrapper.style.display = 'none';
+    });
+</script>
+{% endblock %}

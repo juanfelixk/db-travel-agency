@@ -1,0 +1,64 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<div class="container my-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Flights</h3>
+        <a href="{{ url_for('admin_add_flight' )}}" class="btn btn-primary">
+            Add New Flight
+        </a>
+    </div>
+
+    {% if not flights %}
+        <div class="alert alert-info">
+            No flights found.
+        </div>
+    {% else %}
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Flight No</th>
+                    <th>Airline</th>
+                    <th>Aircraft</th>
+                    <th>Route</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in flights %}
+                <tr>
+                    <td>{{ f.flight_number }}</td>
+                    <td>{{ f.airline_name }}</td>
+                    <td>{{ f.model }}</td>
+                    <td>{{ f.dep_code }} → {{ f.arr_code }}</td>
+                    <td>{{ f.departure_time }}</td>
+                    <td>{{ f.arrival_time }}</td>
+                    <td>
+                        <a href="{{ url_for('admin_edit_flight', flight_id=f.flight_id ) }}"
+                           class="btn btn-sm btn-outline-primary">
+                            Edit
+                        </a>
+                        <a href="{{ url_for('admin_delete_flight', flight_id=f.flight_id ) }}"
+                           class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Delete this flight?');">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <a href="{{ url_for('admin_dashboard') }}"
+       class="btn btn-outline-secondary mt-3">
+        ← Back to Dashboard
+    </a>
+
+</div>
+
+{% endblock %}

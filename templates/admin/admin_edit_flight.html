@@ -1,0 +1,148 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Edit Flight {{ flight.flight_number }}</h4>
+
+<form method="POST" class="card p-4">
+
+    <div class="row g-3">
+
+        <div class="col-md-4">
+            <label>Aircraft</label>
+            <select name="aircraft_id" class="form-select" required>
+                {% for ac in aircrafts %}
+                <option value="{{ ac.aircraft_id }}"
+                    {% if ac.aircraft_id == flight.aircraft_id %}selected{% endif %}>
+                    {{ ac.model }} ({{ ac.seat_layout }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label>Departure Time</label>
+            <input type="datetime-local"
+                   name="departure_time"
+                   class="form-control"
+                   value="{{ flight.departure_time|datetimeformat }}"
+                   required>
+        </div>
+
+        <div class="col-md-4">
+            <label>Arrival Time</label>
+            <input type="datetime-local"
+                   name="arrival_time"
+                   class="form-control"
+                   value="{{ flight.arrival_time|datetimeformat }}"
+                   required>
+        </div>
+
+        <div class="col-md-6">
+            <label>Departure Terminal</label>
+            <input type="text"
+                   name="departure_terminal"
+                   class="form-control"
+                   value="{{ flight.departure_terminal }}">
+        </div>
+
+        <div class="col-md-6">
+            <label>Arrival Terminal</label>
+            <input type="text"
+                   name="arrival_terminal"
+                   class="form-control"
+                   value="{{ flight.arrival_terminal }}">
+        </div>
+    </div>
+
+    <hr>
+
+    <h5>Fares</h5>
+    {% for cls in ["ECONOMY","BUSINESS","FIRST"] %}
+    <div class="border p-3 mb-4 rounded">
+        <h6 class="mb-3">{{ cls }}</h6>
+
+        <!-- Price -->
+        <div class="mb-2">
+            <label>Price</label>
+            <input type="number" step="1"
+                name="price_{{ cls }}"
+                value="{{ fares[cls].price|int }}"
+                class="form-control"
+                required>
+        </div>
+
+        <!-- Baggage -->
+        <div class="row mb-2">
+            <div class="col">
+                <label>Baggage (kg)</label>
+                <input type="number"
+                    name="baggage_{{ cls }}"
+                    value="{{ fares[cls].baggage_kg }}"
+                    class="form-control">
+            </div>
+            <div class="col">
+                <label>Cabin Baggage (kg)</label>
+                <input type="number"
+                    name="cabin_{{ cls }}"
+                    value="{{ fares[cls].cabin_baggage_kg }}"
+                    class="form-control">
+            </div>
+        </div>
+
+        <div class="row align-items-end g-3 mt-1">
+            <div class="col-md-3 d-flex align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                        name="refundable_{{ cls }}"
+                        {% if fares[cls].refundable %}checked{% endif %}>
+                    <label class="form-check-label">Refundable</label>
+                </div>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                        name="reschedulable_{{ cls }}"
+                        {% if fares[cls].reschedulable %}checked{% endif %}>
+                    <label class="form-check-label">Reschedulable</label>
+                </div>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                        name="meal_{{ cls }}"
+                        {% if fares[cls].meal %}checked{% endif %}>
+                    <label class="form-check-label">Meal</label>
+                </div>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                        name="entertainment_{{ cls }}"
+                        {% if fares[cls].entertainment %}checked{% endif %}>
+                    <label class="form-check-label">Entertainment</label>
+                </div>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                        name="wifi_{{ cls }}"
+                        {% if fares[cls].wifi %}checked{% endif %}>
+                    <label class="form-check-label">Wi-Fi</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="text-end mt-4">
+        <a href="{{ url_for('admin_view_flight') }}" class="btn btn-secondary">Cancel</a>
+        <button class="btn btn-primary">Save Changes</button>
+    </div>
+</form>
+
+{% endblock %}

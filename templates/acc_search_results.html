@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container my-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Accommodation Results</h3>
+    </div>
+
+    <div class="mb-4 text-muted">
+        <strong>{{ location }}</strong> ·
+        {{ check_in }} → {{ check_out }} ·
+        {{ stay_nights }} night{{ 's' if stay_nights > 1 else '' }} ·
+        {{ guests }} guests · {{ rooms }} room{{ 's' if rooms|int > 1 else '' }}
+    </div>
+
+    {% if properties|length == 0 %}
+        <div class="alert alert-warning">
+            No accommodations available for the selected criteria.
+        </div>
+    {% else %}
+        {% for property in properties %}
+        <div class="card mb-4 shadow-sm">
+
+            <!-- PROPERTY HEADER -->
+            <div class="card-body border-bottom">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h4 class="mb-1">{{ property.property_name }}</h4>
+                        <div class="text-muted small">
+                            {{ property.property_type }} · {{ property.city }}, {{ property.country }}
+                            {% if property.star %}
+                            <div class="text-warning">
+                                {% for _ in range(property.star) %}★{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        {% if property.rating %}
+                            <div class="fw-semibold">
+                                Rating: {{ property.rating }} <small class="text-muted">({{ property.rating_count }})</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROOM TYPES -->
+            <div class="card-body">
+                {% for room in property.rooms.values() %}
+                <div class="border rounded p-3 mb-3">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h5 class="mb-1">{{ room.room_name }}</h5>
+                            <small class="text-muted">
+                                Max {{ room.max_guests }} guests · {{ room.rooms_available }} rooms left · {{ room.bed_type }} · {{ room.size_sqm }} m<sup>2</sup>
+                            </small>
+                            <div class="small text-muted mt-1">
+                                Starting from: IDR {{ "{:,.0f}".format(room.rates | map(attribute='price_per_night') | min) }} / night
+                            </div>
+                        </div>
+                        <button class="btn p-0 border-0 bg-transparent"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#rates-{{ room.room_type_id }}"
+                                aria-expanded="false">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                    </div>
+
+                    <!-- RATES -->
+                    {% for rate in room.rates %}
+                    <div class="collapse" id="rates-{{ room.room_type_id }}">
+                        <div class="row align-items-center py-2 border-top">
+
+                            <div class="col-md-6">
+                                <strong>{{ rate.plan_name }}</strong>
+                                <div class="mt-1">
+                                    {% if rate.breakfast_included %}
+                                        <span class="badge bg-primary me-1">Breakfast</span>
+                                    {% endif %}
+                                    {% if rate.refundable %}
+                                        <span class="badge bg-secondary me-1">Refundable</span>
+                                    {% endif %}
+                                    {% if rate.reschedulable %}
+                                        <span class="badge bg-secondary">Reschedulable</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 text-md-end fw-bold">
+                                IDR {{ "{:,.0f}".format(rate.price_per_night) }}
+                                <div class="small text-muted">
+                                    per room × {{ stay_nights }} night{{ 's' if stay_nights|int > 1 else '' }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 text-md-end">
+                                <form method="post" action="{{ url_for('choose_accomodation' )}}">
+                                    <input type="hidden" name="room_rate_id" value="{{ rate.room_rate_id }}">
+                                    <input type="hidden" name="room_type_id" value="{{ room.room_type_id }}">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        Select
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endfor %}
+    {% endif %}
+
+</div>
+
+{% endblock %}

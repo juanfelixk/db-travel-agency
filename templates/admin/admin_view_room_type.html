@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>{{ property.property_name }} - Room Types</h4>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Room</th>
+        <th>Guests</th>
+        <th>Total Rooms</th>
+        <th>Action</th>
+    </tr>
+    {% for rt in room_types %}
+    <tr>
+        <td>{{ rt.room_name }}</td>
+        <td>{{ rt.max_guests }}</td>
+        <td>{{ rt.total_rooms }}</td>
+        <td>
+            <a href="{{ url_for('admin_view_room_rate', room_type_id=rt.room_type_id) }}"
+               class="btn btn-sm btn-primary">
+                View Room Rate
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="{{ url_for('admin_view_accommodation') }}"
+       class="btn btn-outline-secondary">
+        ← Back to Accommodation
+    </a>
+    <a href="{{ url_for('admin_add_room_type', property_id=property.property_id) }}"
+       class="btn btn-primary">
+        Add Room Type
+    </a>
+</div>
+
+{% endblock %}

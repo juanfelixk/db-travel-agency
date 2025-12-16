@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Add Room Rate</h4>
+
+<form method="POST" class="card p-4">
+
+    <!-- Plan Name -->
+    <div class="mb-3">
+        <label class="form-label">Plan Name</label>
+        <input
+            name="plan_name"
+            class="form-control"
+            placeholder="e.g. Room Only, Breakfast Included"
+            required
+        >
+    </div>
+
+    <!-- Price -->
+    <div class="mb-3">
+        <label class="form-label">Price per Night</label>
+        <input
+            name="price_per_night"
+            type="number"
+            step="1"
+            class="form-control"
+            required
+        >
+    </div>
+
+    <!-- Options -->
+    <div class="mb-3">
+        <label class="form-label d-block">Options</label>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="breakfast">
+            <label class="form-check-label">Breakfast Included</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="refundable">
+            <label class="form-check-label">Refundable</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="reschedulable">
+            <label class="form-check-label">Reschedulable</label>
+        </div>
+    </div>
+
+    <!-- Validity -->
+    <div class="row mb-4">
+        <div class="col">
+            <label class="form-label">Valid From</label>
+            <input name="valid_from" type="date" class="form-control" required>
+        </div>
+        <div class="col">
+            <label class="form-label">Valid To</label>
+            <input name="valid_to" type="date" class="form-control" required>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-end">
+        <button class="btn btn-primary">Save</button>
+    </div>
+</form>
+
+<a href="{{ url_for('admin_view_room_rate', room_type_id=room_type_id) }}"
+    class="btn btn-outline-secondary mt-3">
+    ← Back to Room Rate
+</a>
+
+{% endblock %}

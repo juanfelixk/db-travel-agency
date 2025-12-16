@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<h4>Select Accommodation</h4>
+
+<table class="table table-bordered mt-3">
+    <tr>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Action</th>
+    </tr>
+    {% for p in properties %}
+    <tr>
+        <td>{{ p.property_name }}</td>
+        <td>{{ p.city }}, {{ p.country }}</td>
+        <td>
+            <a href="{{ url_for('admin_view_room_type', property_id=p.property_id) }}"
+               class="btn btn-sm btn-primary">
+                Manage Rooms
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

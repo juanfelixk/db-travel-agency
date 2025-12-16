@@ -25,23 +25,14 @@
                     data-bs-target="#booking{{ b.booking_id }}">
                 <div class="d-flex align-items-center gap-2">
                     <span class="fw-semibold">Booking #{{ b.booking_id }}</span>
-                    <small class="text-muted ms-2">{{ b.booking_time.strftime('%d %b %Y') }}</small>
+                    <small class="text-muted ms-2">
+                        {{ b.booking_time.strftime('%d %b %Y') if b.booking_time else '-' }}
+                    </small>
                     <span class="badge bg-secondary ms-2">{{ b.status }}</span>
                 </div>
                 <span class="fw-semibold ms-3">
                     Rp {{ "{:,.0f}".format(b.total_price).replace(",", ".") }}
                 </span>
-                {% if b.request %}
-                    {% if b.request.status == 'PENDING' %}
-                        <span class="badge bg-warning ms-4">
-                            {{ b.request.type.capitalize() }} Pending
-                        </span>
-                    {% elif b.request.status == 'APPROVED' %}
-                        <span class="badge bg-success ms-4">
-                            {{ b.request.type.capitalize() }} Approved
-                        </span>
-                    {% endif %}
-                {% endif %}
             </button>
         </h2>
 
@@ -54,47 +45,118 @@
                     <div class="border rounded p-2 mb-2">
                         <strong>{{ f.airline_name }} — {{ f.flight_number }}</strong><br>
                         {{ f.route }}<br>
-                        {{ f.departure.strftime('%d %b %Y %H:%M') }}
-                        →
-                        {{ f.arrival.strftime('%d %b %Y %H:%M') }}<br>
-                        Class: {{ f.fare_class }}
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No flight details</p>
-                {% endif %}
+                        {% if f.departure and f.arrival %}
+                            {{ f.departure.strftime('%d %b %Y %H:%M') }}
+                            →
+                            {{ f.arrival.strftime('%d %b %Y %H:%M') }}
+                        {% else %}
+                            <span class="text-muted">Flight details unavailable</span>
+                        {% endif %}
+                        <br>Class: {{ f.fare_class or '-' }}<br>
 
-                {% if b.request.status == 'APPROVED' and b.request.type == 'REFUND' %}
-                    <div class="text-muted small mt-2 ms-auto">
-                        Refund amount should be reflected in your bank account within 7 working days from {{ b.request.resolved_at }}.
-                    </div>
-                {% endif %}
-
-                {% if b.request and b.request.type == 'RESCHEDULE' and b.request.status == 'APPROVED' %}
-                    <div class="text-muted small mt-2 ms-auto">
-                        To arrange rescheduled flight(s), please contact us at admin@company.com.
-                    </div>
-                {% endif %}
-
-                {% if b.status == 'PAID' and not b.request %}
-                    <div class="d-flex justify-content-end gap-2 mt-3">
-                        {% if not b.request %}
-                            {% if b.can_reschedule %}
-                            <form method="POST" action="{{ url_for('request_reschedule', booking_id=b.booking_id) }}" class="request-form">
-                                <button type="submit" class="btn btn-sm btn-outline-secondary" data-type="Reschedule">
-                                    Request Reschedule
-                                </button>
-                            </form>
+                        {% if f.request %}
+                            {% if f.request.status == 'PENDING' %}
+                                <span class="badge bg-warning mt-2">
+                                    {{ f.request.request_type.capitalize() }} Pending
+                                </span>
+                            {% elif f.request.status == 'APPROVED' %}
+                                <span class="badge bg-success mt-2">
+                                    {{ f.request.request_type.capitalize() }} Approved
+                                </span>
+                                {% if f.request.request_type == 'REFUND' %}
+                                    <br><span class="text-muted small">The refund amount should reflect on your bank account within 7 days from {{ f.request.resolved_at }}.</span>
+                                {% elif f.request.request_type == 'RESCHEDULE' %}
+                                    <span class="text-muted small"><br>Please contact admin@company.com to arrange for rescheduled flight(s).</span>
+                                {% endif %}
+                            {% elif f.request.status == 'REJECTED' %}
+                                <span class="badge bg-danger mt-2">
+                                    {{ f.request.request_type.capitalize() }} Rejected
+                                </span>
                             {% endif %}
-                            {% if b.can_refund %}
-                            <form method="POST" action="{{ url_for('request_refund', booking_id=b.booking_id) }}" class="request-form">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" data-type="Refund">
-                                    Request Refund
-                                </button>
-                            </form>
-                            {% endif %}
+                        {% else %}
+                            <div class="d-flex gap-2 mt-2">
+                                {% if f.reschedulable %}
+                                <form method="POST" action="{{ url_for('request_reschedule', booking_id=b.booking_id, service_id=f.flight_booking_id) }}" class="request-form">
+                                    <input type="hidden" name="service_type" value="FLIGHT">
+                                    <input type="hidden" name="service_id" value="{{ f.flight_booking_id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" data-type="Reschedule">
+                                        Request Reschedule
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if f.refundable %}
+                                <form method="POST" action="{{ url_for('request_refund', booking_id=b.booking_id, service_id=f.flight_booking_id) }}" class="request-form">
+                                    <input type="hidden" name="service_type" value="FLIGHT">
+                                    <input type="hidden" name="service_id" value="{{ f.flight_booking_id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" data-type="Refund">
+                                        Request Refund
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
                         {% endif %}
                     </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if b.accommodations %}
+                    <h6>Accommodations</h6>
+                    {% for a in b.accommodations %}
+                    <div class="border rounded p-2 mb-2">
+                        <strong>{{ a.property_name }}</strong><br>
+                        Room: {{ a.room_name }}<br>
+                        Stay: 
+                        {% if a.check_in and a.check_out %}
+                            {{ a.check_in.strftime('%d %b %Y') }} → {{ a.check_out.strftime('%d %b %Y') }}
+                        {% else %}
+                            <span class="text-muted">Dates unavailable</span>
+                        {% endif %}
+                        <br>
+                        Guests: {{ a.guest_count or '-' }}<br>
+
+                        {% if a.request %}
+                            {% if a.request.status == 'PENDING' %}
+                                <span class="badge bg-warning mt-2">
+                                    {{ a.request.request_type.capitalize() }} Pending
+                                </span>
+                            {% elif a.request.status == 'APPROVED' %}
+                                <span class="badge bg-success mt-2">
+                                    {{ a.request.request_type.capitalize() }} Approved
+                                </span>
+                                {% if a.request.request_type == 'REFUND' %}
+                                    <span class="text-muted small"><br>The refund amount should reflect on your bank account within 7 days from {{ a.request.resolved_at }}.</span>
+                                {% elif a.request.request_type == 'RESCHEDULE' %}
+                                    <span class="text-muted small"><br>Please contact admin@company.com to arrange for rescheduled booking(s).</span>
+                                {% endif %}
+                            {% elif a.request.status == 'REJECTED' %}
+                                <span class="badge bg-danger mt-2">
+                                    {{ a.request.request_type.capitalize() }} Rejected
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <div class="d-flex gap-2 mt-2">
+                                {% if a.reschedulable %}
+                                <form method="POST" action="{{ url_for('request_reschedule', booking_id=b.booking_id, service_id=a.accommodation_booking_id) }}" class="request-form">
+                                    <input type="hidden" name="service_type" value="ACCOMMODATION">
+                                    <input type="hidden" name="service_id" value="{{ a.accommodation_booking_id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" data-type="Reschedule">
+                                        Request Reschedule
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if a.refundable %}
+                                <form method="POST" action="{{ url_for('request_refund', booking_id=b.booking_id, service_id=a.accommodation_booking_id) }}" class="request-form">
+                                    <input type="hidden" name="service_type" value="ACCOMMODATION">
+                                    <input type="hidden" name="service_id" value="{{ a.accommodation_booking_id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" data-type="Refund">
+                                        Request Refund
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
                 {% endif %}
 
             </div>
@@ -107,7 +169,7 @@
 document.querySelectorAll(".request-form").forEach(form => {
     form.addEventListener("submit", function(e) {
         const type = this.querySelector("button").dataset.type;
-        if(!confirm(`Are you sure you want to reques for ${type.toLowerCase()}?`)) {
+        if(!confirm(`Are you sure you want to request for ${type.toLowerCase()}?`)) {
             e.preventDefault();
         }
     });

@@ -69,7 +69,17 @@
                     Departure: {{ dep_flight['dep_city'] }} ({{ dep_flight['dep_airport'] }}) at {{ dep_flight['dep_time'] }}<br>
                     Arrival: {{ dep_flight['arr_city'] }} ({{ dep_flight['arr_airport'] }}) at {{ dep_flight['arr_time'] }}<br>
                     Class: {{ dep_flight['fare_class'] }}<br>
-                    Total Price: Rp {{ "{:,.0f}".format(dep_flight["price"]).replace(",", ".") }} ({{ passengers_count }} pax)
+                    Total Price: Rp {{ "{:,.0f}".format(dep_flight["price"]).replace(",", ".") }} ({{ passengers_count }} pax)<br>
+                    {% if dep_flight['reschedulable'] %}
+                    <span class="badge bg-success mt-2">Reschedulable</span>
+                    {% else %}
+                    <span class="badge bg-secondary mt-2">Not reschedulable</span>
+                    {% endif%}
+                    {% if dep_flight['refundable'] %}
+                    <span class="badge bg-success mt-2">Refundable</span>
+                    {% else %}
+                    <span class="badge bg-secondary mt-2">Not refundable</span>
+                    {% endif%}
                 </p>
             </div>
 
@@ -82,7 +92,17 @@
                     Departure: {{ ret_flight['dep_city'] }} ({{ ret_flight['dep_airport'] }}) at {{ ret_flight['dep_time'] }}<br>
                     Arrival: {{ ret_flight['arr_city'] }} ({{ ret_flight['arr_airport'] }}) at {{ ret_flight['arr_time'] }}<br>
                     Class: {{ ret_flight['fare_class'] }}<br>
-                    Total Price: Rp {{ "{:,.0f}".format(ret_flight["price"]).replace(",", ".") }} ({{ passengers_count }} pax)
+                    Total Price: Rp {{ "{:,.0f}".format(ret_flight["price"]).replace(",", ".") }} ({{ passengers_count }} pax)<br>
+                    {% if ret_flight['reschedulable'] %}
+                    <span class="badge bg-success mt-2">Reschedulable</span>
+                    {% else %}
+                    <span class="badge bg-secondary mt-2">Not reschedulable</span>
+                    {% endif%}
+                    {% if ret_flight['refundable'] %}
+                    <span class="badge bg-success mt-2">Refundable</span>
+                    {% else %}
+                    <span class="badge bg-secondary mt-2">Not refundable</span>
+                    {% endif%}
                 </p>
             </div>
             {% endif %}

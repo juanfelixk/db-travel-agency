@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Airports</h4>
+    <a href="{{ url_for('admin_add_airport') }}" class="btn btn-primary">
+        Add Airport
+    </a>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>IATA</th>
+            <th>Name</th>
+            <th>City</th>
+            <th>Country</th>
+            <th>Timezone</th>
+            <th width="120">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in airports %}
+        <tr>
+            <td>{{ a.airport_id }}</td>
+            <td>{{ a.airport_name }}</td>
+            <td>{{ a.city }}</td>
+            <td>{{ a.country }}</td>
+            <td>UTC{{ "%+d:%02d"|format(a.timezone_hour, a.timezone_minute) }}</td>
+            <td>
+                <form method="POST"
+                      action="{{ url_for('admin_delete_airport', airport_id=a.airport_id) }}"
+                      class="d-inline"
+                      onsubmit="return confirm('Delete this airport?');">
+                    <button class="btn btn-sm btn-outline-danger">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "accommodation/base.html" %}
+
+{% block content %}
+
+<div class="container my-4">
+    <a href="{{ url_for('view_room_type') }}" class="btn btn-outline-secondary mb-3">
+        ← Back to Room Types
+    </a>
+    <h3>Room Rates - {{ room_name }}</h3>
+    {% if not rates %}
+    <div class="alert alert-warning">No room rates added yet.</div>
+    {% endif %}
+
+    {% if rates %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Plan Name</th>
+                <th>Price/Night</th>
+                <th>Breakfast</th>
+                <th>Refundable</th>
+                <th>Reschedulable</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rate in rates %}
+            <tr>
+                <td>{{ rate.plan_name }}</td>
+                <td>Rp {{ "{:,.0f}".format(rate.price_per_night) }}</td>
+                <td>{{ "Yes" if rate.breakfast_included else "No" }}</td>
+                <td>{{ "Yes" if rate.refundable else "No" }}</td>
+                <td>{{ "Yes" if rate.reschedulable else "No" }}</td>
+                <td>
+                    <a href="{{ url_for('edit_room_rate', room_rate_id=rate.room_rate_id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a href="{{ url_for('delete_room_rate', room_rate_id=rate.room_rate_id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this rate?');">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    <div class="d-flex justify-content-end mt-3">
+        <a href="{{ url_for('add_room_rate', room_type_id=room_type_id) }}" class="btn btn-primary">Add Room Rate</a>
+    </div>
+</div>
+
+{% endblock %}
