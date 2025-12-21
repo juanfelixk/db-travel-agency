@@ -234,9 +234,10 @@ CREATE TABLE accommodation_booking (
     booking_id INT UNSIGNED NOT NULL,
     room_rate_id INT UNSIGNED NOT NULL,
     room_type_id INT UNSIGNED NOT NULL,
-    room_count INT NOT NULL CHECK (room_count > 0),
+    room_count INT UNSIGNED NOT NULL CHECK (room_count > 0),
     check_in DATE NOT NULL,
     check_out DATE NOT NULL,
+    guest_name VARCHAR(255) NOT NULL,
     guest_count TINYINT UNSIGNED NOT NULL,
     FOREIGN KEY (booking_id) REFERENCES booking(booking_id)
         ON UPDATE CASCADE ON DELETE CASCADE,
@@ -245,15 +246,6 @@ CREATE TABLE accommodation_booking (
     FOREIGN KEY (room_type_id) REFERENCES room_type(room_type_id)
         ON UPDATE CASCADE ON DELETE RESTRICT,
     CHECK (check_in < check_out)
-);
-
-CREATE TABLE accommodation_guest (
-    guest_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    accommodation_booking_id INT UNSIGNED NOT NULL,
-    full_name VARCHAR(255),
-    FOREIGN KEY (accommodation_booking_id)
-        REFERENCES accommodation_booking(accommodation_booking_id)
-        ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE INDEX idx_room_rate_room_type ON room_rate(room_type_id);
